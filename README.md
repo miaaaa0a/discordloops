@@ -4,7 +4,7 @@ thingy written in rust that displays what project youre working on in fl studio 
 
 ## CURRENTLY WIP!!!!!
 
-#### TODO
-[ ] add config file
-[ ] choose what plugins to display
-[ ] add comments to the code
+### TODO
+- [ ] add config file
+- [ ] choose what plugins to display
+- [ ] add comments to the code
