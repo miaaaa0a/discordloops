@@ -1,6 +1,10 @@
+use std::collections::HashMap;
+
 use windows::core::{Error, HSTRING};
 use windows::Win32::UI::WindowsAndMessaging::{EnumChildWindows, FindWindowExW, FindWindowW, GetWindowTextW, GetClassNameW};
 use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
+
+use crate::config::Config;
 
 pub fn get_fl() -> Result<HWND, Error> {
     let fl_class = &HSTRING::from("TFruityLoopsMainForm");
@@ -49,7 +53,7 @@ fn get_plugins(phwnd: HWND) -> Vec<HWND> {
     return plugins;
 }
 
-pub fn count_ott(result: &Result<HWND, Error>) -> String {
+fn count_plugin(result: &Result<HWND, Error>, plugin_format: String, plugin: String) -> String {
     let fl_hwnd: HWND;
     match result {
         Ok(h) => fl_hwnd = *h,
@@ -66,24 +70,19 @@ pub fn count_ott(result: &Result<HWND, Error>) -> String {
         for i in hwnds {
             let strlen = GetWindowTextW(i, &mut buf);
             let title = String::from_utf16_lossy(&buf[..strlen as usize]);
-            if title.starts_with("OTT") {
+            if title.starts_with(&plugin) {
                 otts += 1;
             }
         }
     }
 
-    let mut formatted = otts.to_string();
-    let mut ott_ref = String::from(" otts");
-    if otts == 1 {
-        ott_ref = String::from(" ott");
-    }
-
-    formatted.insert_str(0, "using ");
-    formatted.push_str(&ott_ref);
+    let formatted = plugin_format
+        .replace("%x", &otts.to_string())
+        .replace("%y", &plugin);
     return formatted;
 }
 
-pub fn get_project(result: &Result<HWND, Error>) -> String {
+fn get_project(result: &Result<HWND, Error>, format: String) -> String {
     let hwnd: HWND;
     match result {
         Ok(h) => hwnd = *h,
@@ -93,13 +92,21 @@ pub fn get_project(result: &Result<HWND, Error>) -> String {
         },
     }
 
-    let mut fl_title = get_fl_title(hwnd);
+    let mut fl_project = get_fl_title(hwnd);
 
-    if fl_title != "nothing here..." {
-        fl_title.truncate(fl_title.len().saturating_sub(17));
-        println!("project: {fl_title}");
-        fl_title.insert_str(0, "working on ");
-    }
+    fl_project.truncate(fl_project.len().saturating_sub(17));
+    println!("project: {fl_project}");
+    let fl_title = format.replace("%%", &fl_project);
 
     return fl_title;
+}
+
+pub fn get_info<'a>(result: &'a Result<HWND, Error>, config: &'a Config) -> HashMap<&'a str, String> {
+    let mut info: HashMap<&str, String> = HashMap::with_capacity(2);
+    let project = get_project(&result, config.project_format.clone());
+    let plugins = count_plugin(&result, config.plugin_format.clone(), config.plugin.clone());
+
+    info.insert("project", project);
+    info.insert("plugins", plugins);
+    return info;
 }
