@@ -1,11 +1,21 @@
-use std::{collections::HashMap, thread, time};
+use std::{collections::HashMap, fs::read, thread, time};
 use config::load_config;
 use discord_presence::{Client, Event};
+use tray_icon::{menu::Menu, TrayIconBuilder, Icon};
 pub mod proj_info;
 pub mod config;
 
 fn main() {
     let config = load_config().unwrap();
+
+    let icon = Icon::from_path("./icon.ico", None).unwrap();
+    let tray_menu = Menu::new();
+    let tray_icon = TrayIconBuilder::new()
+        .with_menu(Box::new(tray_menu))
+        .with_tooltip("DiscordLoops")
+        .with_icon(icon)
+        .build()
+        .unwrap();
 
     let mut drpc = Client::new(1168141266517766175);
     let wait = time::Duration::from_secs(config.update_rate);
