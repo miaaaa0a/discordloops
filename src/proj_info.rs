@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use windows::core::{Error, HSTRING};
+use windows::core::{Error, HSTRING, BOOL};
 use windows::Win32::UI::WindowsAndMessaging::{EnumChildWindows, FindWindowExW, FindWindowW, GetWindowTextW, GetClassNameW};
-use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
+use windows::Win32::Foundation::{HWND, LPARAM};
 
 use crate::config::Config;
 
@@ -45,9 +45,9 @@ fn get_plugins(phwnd: HWND) -> Vec<HWND> {
     }
     
     unsafe {
-        let cbar = FindWindowExW(phwnd, None, cbar_class, None).unwrap_or_default();
-        let wpc = FindWindowExW(phwnd, cbar, wpc_class, None).unwrap_or_default();
-        let _ = EnumChildWindows(wpc, Some(enum_child_proc), LPARAM(&mut plugins as *mut Vec<HWND> as isize));
+        let cbar = FindWindowExW(Some(phwnd), None, cbar_class, None).unwrap_or_default();
+        let wpc = FindWindowExW(Some(phwnd), Some(cbar), wpc_class, None).unwrap_or_default();
+        let _ = EnumChildWindows(Some(wpc), Some(enum_child_proc), LPARAM(&mut plugins as *mut Vec<HWND> as isize));
     }
 
     plugins
