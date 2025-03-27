@@ -15,5 +15,5 @@ pub fn load_config() -> std::result::Result<Config, serde_json::Error> {
         .expect("error while reading config");
     let config: Config = serde_json::from_str(&config_file)?;
 
-    return Ok(config);
+    Ok(config)
 }

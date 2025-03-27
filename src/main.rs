@@ -1,16 +1,20 @@
-use std::{collections::HashMap, fs::read, thread, time};
+use std::{collections::HashMap, thread, time};
 use config::load_config;
 use discord_presence::{Client, Event};
-use tray_icon::{menu::Menu, TrayIconBuilder, Icon};
+use tray_icon::{menu::{IsMenuItem, Menu, MenuItem}, Icon, TrayIconBuilder, TrayIconEvent};
 pub mod proj_info;
 pub mod config;
 
 fn main() {
     let config = load_config().unwrap();
 
+    if let Ok(event) = TrayIconEvent::receiver().try_recv() {
+        println!("{:?}", event);
+    }
     let icon = Icon::from_path("./icon.ico", None).unwrap();
-    let tray_menu = Menu::new();
-    let tray_icon = TrayIconBuilder::new()
+    let menu_items: &[&dyn IsMenuItem] = &[&MenuItem::new("Exit", true, None)];
+    let tray_menu = Menu::with_items(menu_items).unwrap();
+    let _tray_icon = TrayIconBuilder::new()
         .with_menu(Box::new(tray_menu))
         .with_tooltip("DiscordLoops")
         .with_icon(icon)

@@ -9,7 +9,7 @@ use crate::config::Config;
 pub fn get_fl() -> Result<HWND, Error> {
     let fl_class = &HSTRING::from("TFruityLoopsMainForm");
     unsafe {
-        return FindWindowW(fl_class, None);
+        FindWindowW(fl_class, None)
     }
 }
 
@@ -20,7 +20,7 @@ pub fn get_fl_title(hwnd: HWND) -> String {
         let strlen = GetWindowTextW(hwnd, &mut buf);
         title = String::from_utf16_lossy(&buf[..strlen as usize]);
     }
-    return title;
+    title
 }
 
 fn get_plugins(phwnd: HWND) -> Vec<HWND> {
@@ -40,7 +40,7 @@ fn get_plugins(phwnd: HWND) -> Vec<HWND> {
                 .expect("couldnt reference plugin array")
                 .push(hwnd);
             }
-            return true.into();
+            true.into()
         }
     }
     
@@ -50,18 +50,18 @@ fn get_plugins(phwnd: HWND) -> Vec<HWND> {
         let _ = EnumChildWindows(wpc, Some(enum_child_proc), LPARAM(&mut plugins as *mut Vec<HWND> as isize));
     }
 
-    return plugins;
+    plugins
 }
 
 fn count_plugin(result: &Result<HWND, Error>, plugin_format: String, plugin: String) -> String {
-    let fl_hwnd: HWND;
-    match result {
-        Ok(h) => fl_hwnd = *h,
+    
+    let fl_hwnd: HWND = match result {
+        Ok(h) => *h,
         Err(e) => {
             println!("error! {}", e);
             return String::from("not using otts right now");
         },
-    }
+    };
     let mut buf: [u16; 512] = [0; 512];
     let mut otts: u8 = 0;
     let hwnds = get_plugins(fl_hwnd);
@@ -76,37 +76,35 @@ fn count_plugin(result: &Result<HWND, Error>, plugin_format: String, plugin: Str
         }
     }
 
-    let formatted = plugin_format
+    plugin_format
         .replace("%x", &otts.to_string())
-        .replace("%y", &plugin);
-    return formatted;
+        .replace("%y", &plugin)
 }
 
 fn get_project(result: &Result<HWND, Error>, format: String) -> String {
-    let hwnd: HWND;
-    match result {
-        Ok(h) => hwnd = *h,
+    
+    let hwnd: HWND = match result {
+        Ok(h) => *h,
         Err(e) => {
             println!("error! {}", e);
             return String::from("nothing here...");
         },
-    }
+    };
 
     let mut fl_project = get_fl_title(hwnd);
 
     fl_project.truncate(fl_project.len().saturating_sub(17));
     println!("project: {fl_project}");
-    let fl_title = format.replace("%%", &fl_project);
-
-    return fl_title;
+    
+    format.replace("%%", &fl_project)
 }
 
 pub fn get_info<'a>(result: &'a Result<HWND, Error>, config: &'a Config) -> HashMap<&'a str, String> {
     let mut info: HashMap<&str, String> = HashMap::with_capacity(2);
-    let project = get_project(&result, config.project_format.clone());
-    let plugins = count_plugin(&result, config.plugin_format.clone(), config.plugin.clone());
+    let project = get_project(result, config.project_format.clone());
+    let plugins = count_plugin(result, config.plugin_format.clone(), config.plugin.clone());
 
     info.insert("project", project);
     info.insert("plugins", plugins);
-    return info;
+    info
 }
