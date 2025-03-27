@@ -6,7 +6,8 @@ pub struct Config {
     pub project_format: String,
     pub plugin_format: String,
     pub plugin: String,
-    pub update_rate: u64
+    pub update_rate: u64,
+    pub app_id: i64
 }
 
 pub fn load_config() -> std::result::Result<Config, serde_json::Error> {
