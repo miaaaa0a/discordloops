@@ -1,11 +1,16 @@
 use std::{collections::HashMap, thread, time};
+use anyhow::Error;
 use config::load_config;
-use discord_presence::{Client, Event};
 use tray_icon::{menu::{IsMenuItem, Menu, MenuItem}, Icon, TrayIconBuilder, TrayIconEvent};
+use discord_sdk;
+use tokio;
+
 pub mod proj_info;
 pub mod config;
+pub mod presence;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     let config = load_config().unwrap();
 
     if let Ok(event) = TrayIconEvent::receiver().try_recv() {
@@ -21,23 +26,27 @@ fn main() {
         .build()
         .unwrap();
 
-    let mut drpc = Client::new(1168141266517766175);
+    let client = presence::make_client(discord_sdk::Subscriptions::ACTIVITY, config.app_id).await;
+    let mut activity_events = client.wheel.activity();
+    tokio::task::spawn(async move {
+        while let Ok(ae) = activity_events.0.recv().await {
+            tracing::info!(event = ?ae, "received activity event");
+        }
+    });
+
+
     let wait = time::Duration::from_secs(config.update_rate);
     let fl_hwnd = proj_info::get_fl();
     let mut info: HashMap<&str, String>;
 
-    drpc.start();
-    let _ready = drpc.block_until_event(Event::Ready);
-
     println!("discord rpc started");
-    //println!("config: {:?}", config);
 
     loop {
         info = proj_info::get_info(&fl_hwnd, &config);
-        drpc.set_activity(|a| {
-            a.state(info["project"].clone())
-            .details(info["plugins"].clone())
-        }).expect("Failed to set activity");
+        let rp = discord_sdk::activity::ActivityBuilder::default()
+            .details(info["plugins"].to_owned())
+            .state(info["project"].to_owned());
+        client.discord.update_activity(rp).await?;
         thread::sleep(wait);
     }
 }
