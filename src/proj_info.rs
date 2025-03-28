@@ -54,7 +54,6 @@ fn get_plugins(phwnd: HWND) -> Vec<HWND> {
 }
 
 fn count_plugin(result: &Result<HWND, Error>, plugin_format: String, plugin: String) -> String {
-    
     let fl_hwnd: HWND = match result {
         Ok(h) => *h,
         Err(e) => {
