@@ -1,12 +1,14 @@
+use anyhow::Error;
 use std::ffi::{c_void, OsString};
 use std::os::windows::ffi::OsStrExt;
-use anyhow::Error;
 use windows::core::{w, BOOL, HSTRING};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::ValidateRect;
-use windows::Win32::UI::Shell::{Shell_NotifyIconW, NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NOTIFYICONDATAW};
-use windows::Win32::UI::WindowsAndMessaging::*;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
+use windows::Win32::UI::Shell::{
+    Shell_NotifyIconW, NIF_ICON, NIF_MESSAGE, NIF_TIP, NIM_ADD, NOTIFYICONDATAW,
+};
+use windows::Win32::UI::WindowsAndMessaging::*;
 
 const WM_TRAYMESSAGE: u32 = WM_USER + 0x100;
 const TRAY_ID: u32 = 3030303;
@@ -25,7 +27,7 @@ pub enum WindowMessages {
 }
 
 pub struct Window {
-//    message_receiver: std::sync::mpsc::Receiver<WindowMessages>,
+    //    message_receiver: std::sync::mpsc::Receiver<WindowMessages>,
     pub hwnd: HWND,
 }
 
@@ -34,6 +36,7 @@ pub struct WindowThreadState {
     pub is_tracking: bool,
 }
 
+#[allow(clippy::result_unit_err)]
 pub fn create_window() -> Result<Window, ()> {
     let (channel_sender, channel_receiver) = std::sync::mpsc::channel();
 
@@ -71,8 +74,9 @@ pub fn create_window() -> Result<Window, ()> {
                 None,
                 None,
                 None,
-                Some(&mut window_state as *mut WindowThreadState as *mut c_void)
-            ).unwrap();
+                Some(&mut window_state as *mut WindowThreadState as *mut c_void),
+            )
+            .unwrap();
             println!("hwnd in func: {:?}", _hwnd);
 
             let mut message = MSG::default();
@@ -134,26 +138,42 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                         let mut clickpoint = POINT::default();
                         let _ = GetCursorPos(&mut clickpoint as *mut POINT);
                         let pop_menu = CreatePopupMenu().unwrap();
-                        let _ = InsertMenuW(pop_menu, u32::MAX, MF_BYPOSITION | MF_STRING, 1, &HSTRING::from("Exit"));
+                        let _ = InsertMenuW(
+                            pop_menu,
+                            u32::MAX,
+                            MF_BYPOSITION | MF_STRING,
+                            1,
+                            &HSTRING::from("Exit"),
+                        );
                         let _ = SetForegroundWindow(window);
-                        let selected_item = TrackPopupMenu(pop_menu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, clickpoint.x, clickpoint.y, Some(0), window, None);
+                        let selected_item = TrackPopupMenu(
+                            pop_menu,
+                            TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN,
+                            clickpoint.x,
+                            clickpoint.y,
+                            Some(0),
+                            window,
+                            None,
+                        );
 
+                        // i might add more stuff in the future so im allowing a single match
+                        #[allow(clippy::single_match)]
                         match selected_item.0 {
                             1 => {
                                 let _ = PostMessageW(Some(window), WM_CLOSE, WPARAM(0), LPARAM(0));
                                 std::process::exit(0);
-                            },
+                            }
                             _ => {}
                         }
-                    },
-                    _ => tracing::debug!("Unhandled tray message: 0x{:x}", lparam.0 as u32)
+                    }
+                    _ => tracing::debug!("Unhandled tray message: 0x{:x}", lparam.0 as u32),
                 }
                 LRESULT(0)
             }
             _ => {
                 tracing::debug!("Unhandled message: 0x{:x}", message);
                 DefWindowProcW(window, message, wparam, lparam)
-            },
+            }
         }
     }
 }
@@ -173,14 +193,20 @@ pub fn draw_tray_icon(phwnd: HWND) -> Result<BOOL, Error> {
             tip.as_mut_ptr(),
             // Ensure we don't read past the end of info_bytes, or
             // copy too much memory.
-            tip_bytes.len().min(128)
+            tip_bytes.len().min(128),
         );
     }
 
-
     unsafe {
-        let icon = LoadImageW(None, &HSTRING::from("icon.ico"), IMAGE_ICON, 256, 256, LR_LOADFROMFILE)?;
-        let mut nid = NOTIFYICONDATAW {
+        let icon = LoadImageW(
+            None,
+            &HSTRING::from("icon.ico"),
+            IMAGE_ICON,
+            256,
+            256,
+            LR_LOADFROMFILE,
+        )?;
+        let nid = NOTIFYICONDATAW {
             cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
             uFlags: NIF_TIP | NIF_ICON | NIF_MESSAGE,
             szTip: tip,
@@ -191,6 +217,6 @@ pub fn draw_tray_icon(phwnd: HWND) -> Result<BOOL, Error> {
             ..Default::default()
         };
 
-        Ok(Shell_NotifyIconW(NIM_ADD, &mut nid))
+        Ok(Shell_NotifyIconW(NIM_ADD, &nid))
     }
 }

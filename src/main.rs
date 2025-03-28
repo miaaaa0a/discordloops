@@ -1,15 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{collections::HashMap, thread, time};
 use anyhow::Error;
 use config::load_config;
-//use tray_icon::{menu::{IsMenuItem, Menu, MenuItem}, Icon, TrayIconBuilder, TrayIconEvent};
-use discord_sdk;
-use tokio;
+use std::{collections::HashMap, thread, time};
 
-pub mod proj_info;
 pub mod config;
 pub mod presence;
+pub mod proj_info;
 pub mod tray_icon;
 
 #[tokio::main]
@@ -23,7 +20,6 @@ async fn main() -> Result<(), Error> {
             tracing::info!(event = ?ae, "received activity event");
         }
     });
-
 
     let wait = time::Duration::from_secs(config.update_rate);
     let fl_hwnd = proj_info::get_fl();
