@@ -1,7 +1,7 @@
 use anyhow::Error;
 use std::ffi::{c_void, OsString};
 use std::os::windows::ffi::OsStrExt;
-use windows::core::{w, BOOL, HSTRING};
+use windows::core::{w, BOOL, HSTRING, PWSTR};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::ValidateRect;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -138,13 +138,15 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                         let mut clickpoint = POINT::default();
                         let _ = GetCursorPos(&mut clickpoint as *mut POINT);
                         let pop_menu = CreatePopupMenu().unwrap();
-                        let _ = InsertMenuW(
-                            pop_menu,
-                            u32::MAX,
-                            MF_BYPOSITION | MF_STRING,
-                            1,
-                            &HSTRING::from("Exit"),
-                        );
+                        
+                        let exit_item = MENUITEMINFOW {
+                            cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
+                            fMask: MIIM_STRING | MIIM_ID,
+                            wID: 1,
+                            dwTypeData: PWSTR(w!("Exit").as_ptr() as *mut _),
+                            ..Default::default()
+                        };
+                        let _ = InsertMenuItemW(pop_menu, u32::MAX, true, &exit_item);
                         let _ = SetForegroundWindow(window);
                         let selected_item = TrackPopupMenu(
                             pop_menu,
