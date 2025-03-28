@@ -17,16 +17,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --release
     - name: Format latest commit date
       id: commitdate
       run: echo "::set-output name=date::$('${{ github.event.repository.updated_at}}'.Replace(':', '.'))"
+    - name: Copy executable to root folder
+      run: Copy-Item "target/release/fl-rpc.exe" -Destination "."
     - name: Upload executable artifact
       uses: actions/upload-artifact@v4
       with:
         name: discordloops-${{ steps.commitdate.outputs.date }}
         path: |
-          target/debug/fl-rpc.exe
+          fl-rpc.exe
           config.json
           icon.ico
     
