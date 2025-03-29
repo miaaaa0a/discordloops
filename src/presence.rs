@@ -1,5 +1,4 @@
 use discord_sdk as ds;
-use tracing;
 
 pub struct Client {
     pub discord: ds::Discord,
@@ -9,7 +8,7 @@ pub struct Client {
 
 pub async fn make_client(subs: ds::Subscriptions, app_id: ds::AppId) -> Client {
     let (wheel, handler) = ds::wheel::Wheel::new(Box::new(|err| {
-        tracing::error!(error = ?err, "encountered an error");
+        log::error!("encountered an error: {err}");
     }));
 
     let mut user = wheel.user();
@@ -17,7 +16,7 @@ pub async fn make_client(subs: ds::Subscriptions, app_id: ds::AppId) -> Client {
     let discord = ds::Discord::new(ds::DiscordApp::PlainId(app_id), subs, Box::new(handler))
         .expect("unable to create discord client");
 
-    tracing::info!("waiting for handshake...");
+    log::info!("waiting for handshake...");
     user.0.changed().await.unwrap();
 
     let user = match &*user.0.borrow() {
@@ -25,7 +24,7 @@ pub async fn make_client(subs: ds::Subscriptions, app_id: ds::AppId) -> Client {
         ds::wheel::UserState::Disconnected(err) => panic!("failed to connect to Discord: {}", err),
     };
 
-    tracing::info!("connected to Discord, local user is {:#?}", user);
+    log::info!("connected to Discord, local user is {:#?}", user);
 
     Client {
         discord,

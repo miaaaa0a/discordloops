@@ -168,14 +168,11 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                             _ => {}
                         }
                     }
-                    _ => tracing::debug!("Unhandled tray message: 0x{:x}", lparam.0 as u32),
+                    _ => {},
                 }
                 LRESULT(0)
             }
-            _ => {
-                tracing::debug!("Unhandled message: 0x{:x}", message);
-                DefWindowProcW(window, message, wparam, lparam)
-            }
+            _ => DefWindowProcW(window, message, wparam, lparam)
         }
     }
 }
