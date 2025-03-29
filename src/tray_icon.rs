@@ -201,8 +201,8 @@ pub fn draw_tray_icon(phwnd: HWND) -> Result<BOOL, Error> {
             Some(HINSTANCE(instance.0)),
             &HSTRING::from("appicon"),
             IMAGE_ICON,
-            256,
-            256,
+            1024,
+            1024,
             LR_DEFAULTCOLOR,
         )?;
         //let icon = LoadIconW(Some(HINSTANCE(instance.0)), &HSTRING::from("appicon"))?;
