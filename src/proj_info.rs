@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use windows::core::{Error, BOOL, HSTRING};
 use windows::Win32::Foundation::{HWND, LPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{
@@ -7,6 +5,11 @@ use windows::Win32::UI::WindowsAndMessaging::{
 };
 
 use crate::config::Config;
+
+pub struct ProjectInfo {
+    pub project: String,
+    pub plugins: String
+}
 
 pub fn get_fl() -> Result<HWND, Error> {
     let fl_class = &HSTRING::from("TFruityLoopsMainForm");
@@ -106,12 +109,12 @@ fn get_project(result: &Result<HWND, Error>, format: String) -> String {
 pub fn get_info<'a>(
     result: &'a Result<HWND, Error>,
     config: &'a Config,
-) -> HashMap<&'a str, String> {
-    let mut info: HashMap<&str, String> = HashMap::with_capacity(2);
+) -> ProjectInfo {
     let project = get_project(result, config.project_format.clone());
     let plugins = count_plugin(result, config.plugin_format.clone(), config.plugin.clone());
 
-    info.insert("project", project);
-    info.insert("plugins", plugins);
-    info
+    ProjectInfo {
+        project,
+        plugins
+    }
 }

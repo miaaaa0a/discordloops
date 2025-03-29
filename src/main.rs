@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use anyhow::Error;
-use std::{collections::HashMap, thread, time};
+use std::{thread, time};
 
 pub mod config;
 pub mod presence;
@@ -22,21 +22,20 @@ async fn main() -> Result<(), Error> {
 
     let wait = time::Duration::from_secs(config.update_rate);
     let fl_hwnd = proj_info::get_fl();
-    let mut info: HashMap<&str, String>;
 
     let tray_hwnd = tray_icon::create_window();
     log::debug!("{:?}", tray_icon::draw_tray_icon(tray_hwnd.unwrap().hwnd)?);
 
     loop {
-        info = proj_info::get_info(&fl_hwnd, &config);
+        let info = proj_info::get_info(&fl_hwnd, &config);
         let rp = discord_sdk::activity::ActivityBuilder::default()
-            .details(info["plugins"].to_owned())
-            .state(info["project"].to_owned());
+            .details(info.plugins.to_owned())
+            .state(info.project.to_owned());
         client.discord.update_activity(rp).await?;
         log::info!(
             "updated activity: \ndetails: {}\nstate: {}",
-            info["plugins"].to_owned(),
-            info["project"].to_owned()
+            info.plugins.to_owned(),
+            info.project.to_owned()
         );
         thread::sleep(wait);
     }
