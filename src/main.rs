@@ -25,7 +25,7 @@ async fn main() -> Result<(), Error> {
     let mut info: HashMap<&str, String>;
 
     let tray_hwnd = tray_icon::create_window();
-    println!("{:?}", tray_icon::draw_tray_icon(tray_hwnd.unwrap().hwnd)?);
+    log::debug!("{:?}", tray_icon::draw_tray_icon(tray_hwnd.unwrap().hwnd)?);
 
     loop {
         info = proj_info::get_info(&fl_hwnd, &config);
@@ -33,6 +33,7 @@ async fn main() -> Result<(), Error> {
             .details(info["plugins"].to_owned())
             .state(info["project"].to_owned());
         client.discord.update_activity(rp).await?;
+        log::info!("updated activity: \ndetails: {}\nstate: {}", info["plugins"].to_owned(), info["project"].to_owned());
         thread::sleep(wait);
     }
 }

@@ -77,7 +77,6 @@ pub fn create_window() -> Result<Window, ()> {
                 Some(&mut window_state as *mut WindowThreadState as *mut c_void),
             )
             .unwrap();
-            println!("hwnd in func: {:?}", _hwnd);
 
             let mut message = MSG::default();
             while GetMessageW(&mut message, None, 0, 0).into() {
@@ -134,7 +133,7 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                 //println!("fuckkckc");
                 match lparam.0 as u32 {
                     WM_RBUTTONDOWN => {
-                        println!("RMB down");
+                        log::info!("tray menu opened");
                         let mut clickpoint = POINT::default();
                         let _ = GetCursorPos(&mut clickpoint as *mut POINT);
                         let pop_menu = CreatePopupMenu().unwrap();
