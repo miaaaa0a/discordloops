@@ -16,6 +16,6 @@ thingy written in rust that displays what project youre working on in fl studio 
 - [x] choose what plugins to display
 - [ ] add button system
 - [x] make a tray icon
-- [ ] embed icon into executable
+- [x] embed icon into executable
 - [ ] generate config by itself and put it in appdata
 - [ ] logging system
