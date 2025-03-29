@@ -25,13 +25,7 @@ async fn main() -> Result<(), Error> {
     let mut info: HashMap<&str, String>;
 
     let tray_hwnd = tray_icon::create_window();
-    /*if tray_icon::draw_tray_icon(tray_hwnd?)? != true {
-        panic!("error while creating tray icon");
-    };*/
-    //println!("hwnd in main loop: {:?}", tray_hwnd.as_ref().unwrap().hwnd);
     println!("{:?}", tray_icon::draw_tray_icon(tray_hwnd.unwrap().hwnd)?);
-
-    //println!("discord rpc started");
 
     loop {
         info = proj_info::get_info(&fl_hwnd, &config);

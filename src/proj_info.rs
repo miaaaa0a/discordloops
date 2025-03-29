@@ -94,11 +94,9 @@ fn get_project(result: &Result<HWND, Error>, format: String) -> String {
     };
 
     let mut fl_project = get_fl_title(hwnd);
-
     fl_project.truncate(fl_project.len().saturating_sub(17));
-    println!("project: {fl_project}");
 
-    format.replace("%%", &fl_project)
+    if fl_project != "" { format.replace("%%", &fl_project) } else { "nothing here...".to_string() }
 }
 
 pub fn get_info<'a>(
