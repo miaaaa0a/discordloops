@@ -1,7 +1,5 @@
 # DiscordLoops (Discord Rich Presence Intergration for FL Studio)
 
-thingy written in rust that displays what project youre working on in fl studio and additionally counts the amount of otts youve got open
-
 ## CURRENTLY WIP!!!!!
 
 ## Config Explanation
@@ -10,6 +8,9 @@ thingy written in rust that displays what project youre working on in fl studio 
 - `plugin` is the plugin name, which is checked against in the code (case sensitive!!!)
 - `update_rate` is how often the rich presence is updated in seconds
 - `app_id` is the discord app id (controls what is displayed on your profile)
+
+## Note
+this app keeps its config file and logs in the `%APPDATA%/discordloops` directory unless the `config.json` file is in the same directory as the executable
 
 ### TODO
 - [x] add config file
