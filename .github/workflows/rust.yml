@@ -30,5 +30,4 @@ jobs:
         path: |
           fl-rpc.exe
           config.json
-          icon.ico
     

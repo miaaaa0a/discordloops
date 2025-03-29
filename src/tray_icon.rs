@@ -2,7 +2,7 @@ use anyhow::Error;
 use std::ffi::{c_void, OsString};
 use std::os::windows::ffi::OsStrExt;
 use windows::core::{w, BOOL, HSTRING, PWSTR};
-use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
+use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::ValidateRect;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows::Win32::UI::Shell::{
@@ -200,14 +200,16 @@ pub fn draw_tray_icon(phwnd: HWND) -> Result<BOOL, Error> {
     }
 
     unsafe {
+        let instance = GetModuleHandleW(None)?;
         let icon = LoadImageW(
-            None,
-            &HSTRING::from("icon.ico"),
+            Some(HINSTANCE(instance.0)),
+            &HSTRING::from("appicon"),
             IMAGE_ICON,
             256,
             256,
-            LR_LOADFROMFILE,
+            LR_DEFAULTCOLOR,
         )?;
+        //let icon = LoadIconW(Some(HINSTANCE(instance.0)), &HSTRING::from("appicon"))?;
         let nid = NOTIFYICONDATAW {
             cbSize: std::mem::size_of::<NOTIFYICONDATAW>() as u32,
             uFlags: NIF_TIP | NIF_ICON | NIF_MESSAGE,
