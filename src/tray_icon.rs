@@ -150,7 +150,7 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                         let _ = SetForegroundWindow(window);
                         let selected_item = TrackPopupMenu(
                             pop_menu,
-                            TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN,
+                            TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN | TPM_RETURNCMD,
                             clickpoint.x,
                             clickpoint.y,
                             Some(0),
