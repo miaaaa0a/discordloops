@@ -10,7 +10,7 @@ pub struct Config {
     pub app_id: i64,
 }
 
-pub fn load_config() -> std::result::Result<Config, serde_json::Error> {
+pub fn load_config() -> Result<Config, serde_json::Error> {
     let config_path = String::from("config.json");
     let config_file: String = fs::read_to_string(config_path).expect("error while reading config");
     let config: Config = serde_json::from_str(&config_file)?;
