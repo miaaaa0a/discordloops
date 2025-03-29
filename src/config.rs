@@ -1,9 +1,9 @@
 use anyhow::Error;
+use ftail::Ftail;
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{fs, path::Path};
-use ftail::Ftail;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -21,7 +21,7 @@ impl Default for Config {
             plugin_format: "%x %y open".to_string(),
             plugin: "OTT".to_string(),
             update_rate: 10,
-            app_id: 1168141266517766175
+            app_id: 1168141266517766175,
         }
     }
 }

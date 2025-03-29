@@ -130,48 +130,44 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                 LRESULT(0)
             }
             WM_TRAYMESSAGE => {
-                //println!("fuckkckc");
-                match lparam.0 as u32 {
-                    WM_RBUTTONDOWN => {
-                        log::info!("tray menu opened");
-                        let mut clickpoint = POINT::default();
-                        let _ = GetCursorPos(&mut clickpoint as *mut POINT);
-                        let pop_menu = CreatePopupMenu().unwrap();
-                        
-                        let exit_item = MENUITEMINFOW {
-                            cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
-                            fMask: MIIM_STRING | MIIM_ID,
-                            wID: 1,
-                            dwTypeData: PWSTR(w!("Exit").as_ptr() as *mut _),
-                            ..Default::default()
-                        };
-                        let _ = InsertMenuItemW(pop_menu, u32::MAX, true, &exit_item);
-                        let _ = SetForegroundWindow(window);
-                        let selected_item = TrackPopupMenu(
-                            pop_menu,
-                            TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN | TPM_RETURNCMD,
-                            clickpoint.x,
-                            clickpoint.y,
-                            Some(0),
-                            window,
-                            None,
-                        );
+                if lparam.0 as u32 == WM_RBUTTONDOWN {
+                    log::info!("tray menu opened");
+                    let mut clickpoint = POINT::default();
+                    let _ = GetCursorPos(&mut clickpoint as *mut POINT);
+                    let pop_menu = CreatePopupMenu().unwrap();
 
-                        // i might add more stuff in the future so im allowing a single match
-                        #[allow(clippy::single_match)]
-                        match selected_item.0 {
-                            1 => {
-                                let _ = PostMessageW(Some(window), WM_CLOSE, WPARAM(0), LPARAM(0));
-                                std::process::exit(0);
-                            }
-                            _ => {}
+                    let exit_item = MENUITEMINFOW {
+                        cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
+                        fMask: MIIM_STRING | MIIM_ID,
+                        wID: 1,
+                        dwTypeData: PWSTR(w!("Exit").as_ptr() as *mut _),
+                        ..Default::default()
+                    };
+                    let _ = InsertMenuItemW(pop_menu, u32::MAX, true, &exit_item);
+                    let _ = SetForegroundWindow(window);
+                    let selected_item = TrackPopupMenu(
+                        pop_menu,
+                        TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN | TPM_RETURNCMD,
+                        clickpoint.x,
+                        clickpoint.y,
+                        Some(0),
+                        window,
+                        None,
+                    );
+
+                    // i might add more stuff in the future so im allowing a single match
+                    #[allow(clippy::single_match)]
+                    match selected_item.0 {
+                        1 => {
+                            let _ = PostMessageW(Some(window), WM_CLOSE, WPARAM(0), LPARAM(0));
+                            std::process::exit(0);
                         }
+                        _ => {}
                     }
-                    _ => {},
                 }
                 LRESULT(0)
             }
-            _ => DefWindowProcW(window, message, wparam, lparam)
+            _ => DefWindowProcW(window, message, wparam, lparam),
         }
     }
 }

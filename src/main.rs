@@ -33,7 +33,11 @@ async fn main() -> Result<(), Error> {
             .details(info["plugins"].to_owned())
             .state(info["project"].to_owned());
         client.discord.update_activity(rp).await?;
-        log::info!("updated activity: \ndetails: {}\nstate: {}", info["plugins"].to_owned(), info["project"].to_owned());
+        log::info!(
+            "updated activity: \ndetails: {}\nstate: {}",
+            info["plugins"].to_owned(),
+            info["project"].to_owned()
+        );
         thread::sleep(wait);
     }
 }
