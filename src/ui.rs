@@ -1,4 +1,4 @@
-use eframe::egui::{self, Align, Layout, RichText};
+use eframe::egui::{self, Align, IconData, Layout, RichText};
 use eframe::EventLoopBuilderHook;
 use winit::platform::windows::EventLoopBuilderExtWindows;
 
@@ -10,7 +10,10 @@ pub fn about() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([400.0, 200.0])
-            .with_resizable(false),
+            .with_resizable(false)
+            .with_minimize_button(false)
+            .with_maximize_button(false),
+        centered: true,
         event_loop_builder,
         ..Default::default()
     };
