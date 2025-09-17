@@ -10,6 +10,8 @@ use windows::Win32::UI::Shell::{
 };
 use windows::Win32::UI::WindowsAndMessaging::*;
 
+use crate::ui;
+
 const WM_TRAYMESSAGE: u32 = WM_USER + 0x100;
 const TRAY_ID: u32 = 3030303;
 
@@ -136,13 +138,21 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                     let _ = GetCursorPos(&mut clickpoint as *mut POINT);
                     let pop_menu = CreatePopupMenu().unwrap();
 
-                    let exit_item = MENUITEMINFOW {
+                    let about_item = MENUITEMINFOW {
                         cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
                         fMask: MIIM_STRING | MIIM_ID,
                         wID: 1,
+                        dwTypeData: PWSTR(w!("About").as_ptr() as *mut _),
+                        ..Default::default()
+                    };
+                    let exit_item = MENUITEMINFOW {
+                        cbSize: std::mem::size_of::<MENUITEMINFOW>() as u32,
+                        fMask: MIIM_STRING | MIIM_ID,
+                        wID: 2,
                         dwTypeData: PWSTR(w!("Exit").as_ptr() as *mut _),
                         ..Default::default()
                     };
+                    let _ = InsertMenuItemW(pop_menu, u32::MAX, true, &about_item);
                     let _ = InsertMenuItemW(pop_menu, u32::MAX, true, &exit_item);
                     let _ = SetForegroundWindow(window);
                     let selected_item = TrackPopupMenu(
@@ -159,6 +169,9 @@ extern "system" fn wndproc(window: HWND, message: u32, wparam: WPARAM, lparam: L
                     #[allow(clippy::single_match)]
                     match selected_item.0 {
                         1 => {
+                            let _ = ui::about();
+                        }
+                        2 => {
                             let _ = PostMessageW(Some(window), WM_CLOSE, WPARAM(0), LPARAM(0));
                             std::process::exit(0);
                         }

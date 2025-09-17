@@ -7,6 +7,7 @@ pub mod config;
 pub mod presence;
 pub mod proj_info;
 pub mod tray_icon;
+pub mod ui;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
