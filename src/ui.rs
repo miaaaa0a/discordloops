@@ -1,14 +1,16 @@
-use eframe::egui::{self, Align, Direction, Layout, RichText};
+use eframe::egui::{self, Align, Layout, RichText};
 use eframe::EventLoopBuilderHook;
 use winit::platform::windows::EventLoopBuilderExtWindows;
 
 pub fn about() -> eframe::Result {
     // stupid hack but we are on windows only sooooo
     let event_loop_builder: Option<EventLoopBuilderHook> = Some(Box::new(|event_loop_builder| {
-		event_loop_builder.with_any_thread(true);
-	}));
+        event_loop_builder.with_any_thread(true);
+    }));
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([400.0, 200.0]).with_resizable(false),
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([400.0, 200.0])
+            .with_resizable(false),
         event_loop_builder,
         ..Default::default()
     };
@@ -23,14 +25,14 @@ pub fn about() -> eframe::Result {
 }
 
 struct AboutApp {
-    _meower: bool
+    _meower: bool,
 }
 
 impl Default for AboutApp {
     fn default() -> Self {
         Self {
             // yep we are meowing
-            _meower: true
+            _meower: true,
         }
     }
 }

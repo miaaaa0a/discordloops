@@ -21,7 +21,7 @@ async fn main() -> Result<(), Error> {
         }
     });
     let wait = time::Duration::from_secs(config.update_rate);
-    
+
     let tray_hwnd = tray_icon::create_window();
     log::debug!("{:?}", tray_icon::draw_tray_icon(tray_hwnd.unwrap().hwnd)?);
 
@@ -40,7 +40,7 @@ async fn main() -> Result<(), Error> {
                     info.plugins.to_owned(),
                     info.project.to_owned()
                 );
-            },
+            }
             Err(_e) => {
                 client.discord.clear_activity().await?;
                 log::info!("no fl open!");

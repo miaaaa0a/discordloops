@@ -9,7 +9,7 @@ use crate::config::Config;
 
 pub struct ProjectInfo {
     pub project: String,
-    pub plugins: String
+    pub plugins: String,
 }
 
 #[derive(Error, Debug)]
@@ -89,28 +89,22 @@ fn count_plugin(fl_hwnd: HWND, plugin_format: String, plugin: String) -> String 
 
 fn get_project(fl_hwnd: HWND, format: String) -> Result<String, InfoError> {
     let mut fl_project = get_fl_title(fl_hwnd);
-    if fl_project.len() == 0 { return Err(InfoError::NoFL) }
-    
+    if fl_project.is_empty() {
+        return Err(InfoError::NoFL);
+    }
+
     fl_project.truncate(fl_project.len().saturating_sub(17));
 
-    Ok(
-        if !fl_project.is_empty() {
-            format.replace("%%", &fl_project)
-        } else {
-            "nothing here...".to_string()
-        }
-    )
+    Ok(if !fl_project.is_empty() {
+        format.replace("%%", &fl_project)
+    } else {
+        "nothing here...".to_string()
+    })
 }
 
-pub fn get_info(
-    fl_hwnd: HWND,
-    config: &Config,
-) -> Result<ProjectInfo, InfoError> {
+pub fn get_info(fl_hwnd: HWND, config: &Config) -> Result<ProjectInfo, InfoError> {
     let project = get_project(fl_hwnd, config.project_format.clone())?;
     let plugins = count_plugin(fl_hwnd, config.plugin_format.clone(), config.plugin.clone());
 
-    Ok(ProjectInfo {
-        project,
-        plugins
-    })
+    Ok(ProjectInfo { project, plugins })
 }
