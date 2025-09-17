@@ -1,4 +1,5 @@
-use windows::core::{Error, BOOL, HSTRING};
+use thiserror::Error;
+use windows::core::{Error as WinError, BOOL, HSTRING};
 use windows::Win32::Foundation::{HWND, LPARAM};
 use windows::Win32::UI::WindowsAndMessaging::{
     EnumChildWindows, FindWindowExW, FindWindowW, GetClassNameW, GetWindowTextW,
@@ -11,7 +12,13 @@ pub struct ProjectInfo {
     pub plugins: String
 }
 
-pub fn get_fl() -> Result<HWND, Error> {
+#[derive(Error, Debug)]
+pub enum InfoError {
+    #[error("no fl open")]
+    NoFL,
+}
+
+pub fn get_fl() -> Result<HWND, WinError> {
     let fl_class = &HSTRING::from("TFruityLoopsMainForm");
     unsafe { FindWindowW(fl_class, None) }
 }
@@ -60,14 +67,7 @@ fn get_plugins(phwnd: HWND) -> Vec<HWND> {
     plugins
 }
 
-fn count_plugin(result: &Result<HWND, Error>, plugin_format: String, plugin: String) -> String {
-    let fl_hwnd: HWND = match result {
-        Ok(h) => *h,
-        Err(e) => {
-            println!("error! {}", e);
-            return String::from("not using otts right now");
-        }
-    };
+fn count_plugin(fl_hwnd: HWND, plugin_format: String, plugin: String) -> String {
     let mut buf: [u16; 512] = [0; 512];
     let mut otts: u8 = 0;
     let hwnds = get_plugins(fl_hwnd);
@@ -87,34 +87,30 @@ fn count_plugin(result: &Result<HWND, Error>, plugin_format: String, plugin: Str
         .replace("%y", &plugin)
 }
 
-fn get_project(result: &Result<HWND, Error>, format: String) -> String {
-    let hwnd: HWND = match result {
-        Ok(h) => *h,
-        Err(e) => {
-            println!("error! {}", e);
-            return String::from("nothing here...");
-        }
-    };
-
-    let mut fl_project = get_fl_title(hwnd);
+fn get_project(fl_hwnd: HWND, format: String) -> Result<String, InfoError> {
+    let mut fl_project = get_fl_title(fl_hwnd);
+    if fl_project.len() == 0 { return Err(InfoError::NoFL) }
+    
     fl_project.truncate(fl_project.len().saturating_sub(17));
 
-    if !fl_project.is_empty() {
-        format.replace("%%", &fl_project)
-    } else {
-        "nothing here...".to_string()
-    }
+    Ok(
+        if !fl_project.is_empty() {
+            format.replace("%%", &fl_project)
+        } else {
+            "nothing here...".to_string()
+        }
+    )
 }
 
-pub fn get_info<'a>(
-    result: &'a Result<HWND, Error>,
-    config: &'a Config,
-) -> ProjectInfo {
-    let project = get_project(result, config.project_format.clone());
-    let plugins = count_plugin(result, config.plugin_format.clone(), config.plugin.clone());
+pub fn get_info(
+    fl_hwnd: HWND,
+    config: &Config,
+) -> Result<ProjectInfo, InfoError> {
+    let project = get_project(fl_hwnd, config.project_format.clone())?;
+    let plugins = count_plugin(fl_hwnd, config.plugin_format.clone(), config.plugin.clone());
 
-    ProjectInfo {
+    Ok(ProjectInfo {
         project,
         plugins
-    }
+    })
 }

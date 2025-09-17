@@ -19,24 +19,32 @@ async fn main() -> Result<(), Error> {
             log::info!("received activity event: {:?}", ae);
         }
     });
-
     let wait = time::Duration::from_secs(config.update_rate);
-    let fl_hwnd = proj_info::get_fl();
-
+    
     let tray_hwnd = tray_icon::create_window();
     log::debug!("{:?}", tray_icon::draw_tray_icon(tray_hwnd.unwrap().hwnd)?);
 
     loop {
-        let info = proj_info::get_info(&fl_hwnd, &config);
-        let rp = discord_sdk::activity::ActivityBuilder::default()
-            .details(info.plugins.to_owned())
-            .state(info.project.to_owned());
-        client.discord.update_activity(rp).await?;
-        log::info!(
-            "updated activity: \ndetails: {}\nstate: {}",
-            info.plugins.to_owned(),
-            info.project.to_owned()
-        );
+        let fl_hwnd = proj_info::get_fl();
+
+        match fl_hwnd {
+            Ok(hwnd) => {
+                let info = proj_info::get_info(hwnd, &config)?;
+                let rp = discord_sdk::activity::ActivityBuilder::default()
+                    .details(info.plugins.to_owned())
+                    .state(info.project.to_owned());
+                client.discord.update_activity(rp).await?;
+                log::info!(
+                    "updated activity: \ndetails: {}\nstate: {}",
+                    info.plugins.to_owned(),
+                    info.project.to_owned()
+                );
+            },
+            Err(_e) => {
+                client.discord.clear_activity().await?;
+                log::info!("no fl open!");
+            }
+        }
         thread::sleep(wait);
     }
 }

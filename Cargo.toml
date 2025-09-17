@@ -10,6 +10,7 @@ ftail = "0.2.1"
 log = "0.4.27"
 serde = "1.0.219"
 serde_json = "1.0.140"
+thiserror = "2.0.16"
 tokio = { version = "1.44.1", features = ["full"] }
 widestring = "1.2.0"
 
